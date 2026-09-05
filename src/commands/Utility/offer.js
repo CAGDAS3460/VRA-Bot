@@ -58,39 +58,22 @@ export default {
         const region = interaction.options.getString('region');
         const manager = interaction.options.getUser('manager');
 
-        // ====================== WHITELIST CHECK ======================
-        const allowedTeamRoles = [
-            '1541050489670598686',
-            '1541050519034798180',
-            '1541050615730413698',
-            '1541050568049561691',
-            '1541050662870188082',
-            '1541050701864509481',
-            '1541050739387011114',
-            '1541050772228145184',
-            '1541050803924766790',
-            '1541050850938589325',
-            '1541050876742078585',
-            '1541050900599021609',
-            '1541050934099058759',
-            '1541051033487282238',
-            '1541050985244262432',
-            '1541051176647139389'
+        // ====================== BLACKLIST CHECK ======================
+        const blacklistedRoles = [
+            '1536071019612213338',
+            '1536326544971268146',
+            '1536076122909974719',
+            '1536076492688072714',
+            '1536326157346144280',
+            '1536419385063899300',
+            '1536076131600441396',
+            '1536325359912362066',
+            '1536325689525932156'
         ];
 
-        if (!allowedTeamRoles.includes(teamRole.id)) {
+        if (blacklistedRoles.includes(teamRole.id)) {
             return interaction.reply({
                 content: '❌ You cannot select this role as a team.',
-                ephemeral: true
-            });
-        }
-        // ==============================================================
-
-        // ====================== HIERARCHY CHECK ======================
-        // Seçilen takım rolü, komutu kullanan kişinin en yüksek rolünden yüksek veya eşit olamaz
-        if (teamRole.position >= member.roles.highest.position) {
-            return interaction.reply({
-                content: '❌ You cannot select a role that is equal to or higher than your highest role.',
                 ephemeral: true
             });
         }
@@ -199,6 +182,7 @@ export default {
                 // ====================== ACCEPT İŞLEMLERİ ======================
                 if (isAccept) {
                     try {
+                        // 1. Oyuncuya takım rolünü ver
                         const guild = interaction.guild;
                         const playerMember = await guild.members.fetch(player.id).catch(() => null);
 
@@ -213,7 +197,9 @@ export default {
                             logger.warn('Could not fetch player member to give role', { playerId: player.id });
                         }
 
+                        // 2. Duyuru kanalına mesaj gönder
                         const announcementChannel = await client.channels.fetch('1536072163201785897');
+
                         if (announcementChannel) {
                             const announcementEmbed = new EmbedBuilder()
                                 .setColor(0x57F287)
@@ -256,6 +242,7 @@ export default {
                     await manager.send({ embeds: [resultEmbed] }).catch(() => {
                         logger.warn('Could not send DM to manager', { managerId: manager.id });
                     });
+
                 } catch (err) {
                     logger.error('Offer result notification error', { error: err.message });
                 }
